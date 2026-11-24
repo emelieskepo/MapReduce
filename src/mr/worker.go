@@ -5,6 +5,7 @@ import "log"
 import "net/rpc"
 import "hash/fnv"
 
+// HÄR SKA VI IMPLEMENTERA KOD!
 
 //
 // Map functions return a slice of KeyValue.

@@ -6,6 +6,7 @@ import "os"
 import "net/rpc"
 import "net/http"
 
+// HÄR SKA VI IMPLEMENTERA KOD!
 
 type Coordinator struct {
 	// Your definitions here.

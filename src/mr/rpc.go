@@ -6,6 +6,9 @@ package mr
 // remember to capitalize all names.
 //
 
+// HÄR SKA VI IMPLEMENTERA KOD!
+
+
 import "os"
 import "strconv"
 
