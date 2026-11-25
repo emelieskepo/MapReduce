@@ -1,9 +1,15 @@
 package mr
 
-import "fmt"
-import "log"
-import "net/rpc"
-import "hash/fnv"
+import (
+	"fmt"
+	"hash/fnv"
+	"io/ioutil"
+	"log"
+	"net/rpc"
+	"time"
+	"os"
+	"encoding/json"
+)
 
 // HÄR SKA VI IMPLEMENTERA KOD!
 
@@ -34,9 +40,71 @@ func Worker(mapf func(string, string) []KeyValue,
 
 	// Your worker implementation here.
 
+	for {
+		args := RequestTaskArgs{}
+		reply := RequestTaskReply{}
+
+		ok := call("Coordinator.RequestTask", &args, &reply)
+
+		if !ok {
+			continue
+		}
+
+		switch reply.TaskType {
+		case MapTask: 
+			executeMapTask(reply.TaskID, reply.Filename, mapf, reply.NReduce)
+		case ReduceTask: 
+
+		case WaitTask:
+
+		case ExitTask: 
+			return
+		}
+	}
+
 	// uncomment to send the Example RPC to the coordinator.
 	// CallExample()
 
+}
+
+func executeMapTask(taskID int, filename string, mapf func(string, string) []KeyValue, nReduce int) error{
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+
+	defer file.Close()
+
+	content, err := ioutil.ReadAll(file)
+	if err != nil {
+		return err
+	}
+
+	kva :=mapf(filename, string(content))
+
+	partitions := make([][]KeyValue, nReduce)
+
+	for _, kv := range kva {
+		partition := ihash(kv.Key) % nReduce
+		partitions[partition] = append(partitions[partition], kv)
+	}
+
+	for i, partition := range partitions {
+		intermediateFile := fmt.Sprintf("mr-%v-%v", taskID, i)
+
+		file, err := os.Create(intermediateFile)
+		//ioutil.TempFile()
+		if err != nil {
+			return err
+		}
+
+		// fortsätt här nästa gång med att byta os.create till ioutil tempfile
+
+
+		
+	}
+
+	return nil
 }
 
 //

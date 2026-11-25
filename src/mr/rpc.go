@@ -6,26 +6,36 @@ package mr
 // remember to capitalize all names.
 //
 
-// HÄR SKA VI IMPLEMENTERA KOD!
-
 
 import "os"
 import "strconv"
 
-//
-// example to show how to declare the arguments
-// and reply for an RPC.
-//
 
-type ExampleArgs struct {
-	X int
+type TaskType int
+
+const (
+	MapTask TaskType=iota
+	ReduceTask
+	WaitTask
+	ExitTask
+)
+
+type RequestTaskArgs struct{}
+
+type RequestTaskReply struct {
+	TaskType TaskType
+	TaskID int 
+	Filename string
+	NReduce int // Each mapper needs to create nreduce intermediate files for consumption 
+	NMap int // Total number of Map tasks
 }
 
-type ExampleReply struct {
-	Y int
-}
+type ReportTaskReply struct {}
 
-// Add your RPC definitions here.
+type ReportTaskArgs struct {
+	TaskType TaskType
+	TaskID int 
+}
 
 
 // Cook up a unique-ish UNIX-domain socket name
@@ -36,4 +46,13 @@ func coordinatorSock() string {
 	s := "/var/tmp/5840-mr-"
 	s += strconv.Itoa(os.Getuid())
 	return s
+}
+
+//behövs just nu för att testerna ska köra 25/11, kan nog tas bort senare
+type ExampleArgs struct {
+    X int
+}
+
+type ExampleReply struct {
+    Y int
 }
