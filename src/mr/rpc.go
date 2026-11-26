@@ -6,8 +6,13 @@ package mr
 // remember to capitalize all names.
 //
 
-import "os"
-import "strconv"
+import (
+	"os"
+	"strconv"
+)
+
+// Change this to the Coordinator's private IP address when running on AWS.
+const coordinatorAddr string = "127.0.0.1:1234"
 
 type TaskType int
 
@@ -18,34 +23,86 @@ const (
 	ExitTask
 )
 
-type RequestTaskArgs struct{}
+type RequestTaskArgs struct {
+	WorkerID   string
+	WorkerAddr string
+}
+
+type MapLocation struct {
+	Addr    string
+	Attempt int
+}
 
 type RequestTaskReply struct {
 	TaskType TaskType
 	TaskID   int
+	Attempt  int
 	Filename string
-	NReduce  int // Each mapper needs to create nreduce intermediate files for consumption
-	NMap     int // Total number of Map tasks
+	NReduce  int
+	NMap     int
+	MapLocs  []MapLocation
+}
+
+type ReportTaskArgs struct {
+	TaskType   TaskType
+	TaskID     int
+	Attempt    int
+	WorkerID   string
+	WorkerAddr string
+	Output     []byte
 }
 
 type ReportTaskReply struct{}
 
-type ReportTaskArgs struct {
-	TaskType TaskType
-	TaskID   int
+type RegisterWorkerArgs struct {
+	WorkerID   string
+	WorkerAddr string
 }
 
-// Cook up a unique-ish UNIX-domain socket name
-// in /var/tmp, for the coordinator.
-// Can't use the current directory since
-// Athena AFS doesn't support UNIX-domain sockets.
+type RegisterWorkerReply struct{}
+
+type ProgressTaskArgs struct {
+	TaskType TaskType
+	TaskID   int
+	Attempt  int
+	WorkerID string
+	Progress float64
+}
+
+type ProgressTaskReply struct{}
+
+type FetchArgs struct {
+	MapID    int
+	ReduceID int
+	Attempt  int
+}
+
+type FetchReply struct {
+	Data []byte
+}
+
+type GetInputArgs struct {
+	Filename string
+}
+
+type GetInputReply struct {
+	Data []byte
+}
+
+type ReportMapFailureArgs struct {
+	MapID    int
+	Attempt  int
+	WorkerID string
+}
+
+type ReportMapFailureReply struct{}
+
 func coordinatorSock() string {
 	s := "/var/tmp/5840-mr-"
 	s += strconv.Itoa(os.Getuid())
 	return s
 }
 
-// behövs just nu för att testerna ska köra 25/11, kan nog tas bort senare
 type ExampleArgs struct {
 	X int
 }
